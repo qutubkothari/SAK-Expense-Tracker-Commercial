@@ -1,0 +1,34 @@
+﻿python.exe : WARNING: You might be using automatic scaling for a standard environment 
+deployment, without providing a value for automatic_scaling.max_instances. Starting from 
+March, 2025, App Engine sets the automatic scaling maximum instances default for standard 
+environment deployments to 20. This change doesn't impact existing apps. To override the 
+default, specify the new max_instances value in your app.yaml file, and deploy a new 
+version or redeploy over an existing version. For details on max_instances, see 
+https://cloud.google.com/appengine/docs/standard/reference/app-yaml.md#scaling_elements. 
+At C:\Users\musta\AppData\Local\Google\Cloud SDK\google-cloud-sdk\bin\gcloud.ps1:114 char:3
++   & "$cloudsdk_python" $run_args_array
++   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (WARNING: You mi...ling_elements. :String) [],  
+   RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+Services to deploy:
+
+descriptor:                  
+[C:\Users\musta\OneDrive\Documents\GitHub\SAK-Expense-Tracker\app.yaml]
+source:                      [C:\Users\musta\OneDrive\Documents\GitHub\SAK-Expense-Tracker]
+target project:              [sak-whatsapp-ai-sales-assist]
+target service:              [default]
+target version:              [20251111t000657]
+target url:                  
+[https://20251111t000657-dot-sak-whatsapp-ai-sales-assist.wl.r.appspot.com]
+target service account:      [sak-whatsapp-ai-sales-assist@appspot.gserviceaccount.com]
+
+
+     (add --promote if you also want to make this service available from
+     [https://sak-whatsapp-ai-sales-assist.wl.r.appspot.com])
+
+Beginning deployment of service [default]...
+#============================================================#
+#= Uploading 7 files to Google Cloud Storage                =#

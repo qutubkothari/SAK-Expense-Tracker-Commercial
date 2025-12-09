@@ -1,0 +1,28 @@
+{
+  "name": "family-expense-tracker",
+  "version": "1.0.0",
+  "description": "AI-powered family expense tracker with SMS parsing",
+  "main": "app.js",
+  "scripts": {
+    "sync": "cap sync",
+    "open:android": "cap open android",
+    "open:ios": "cap open ios",
+    "build:android": "cd android && gradlew bundleRelease",
+    "build:all": "npm run sync && npm run build:android"
+  },
+  "keywords": [
+    "expense",
+    "tracker",
+    "budget",
+    "finance",
+    "family"
+  ],
+  "author": "SAK Solution",
+  "license": "ISC",
+  "dependencies": {
+    "@capacitor/android": "^6.2.1",
+    "@capacitor/cli": "^6.2.1",
+    "@capacitor/core": "^6.2.1",
+    "@capacitor/ios": "^6.2.1"
+  }
+}

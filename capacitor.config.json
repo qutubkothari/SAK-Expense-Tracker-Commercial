@@ -1,0 +1,18 @@
+{
+  "appId": "com.saksolution.expensetracker",
+  "appName": "Family Expense Tracker",
+  "webDir": "www",
+  "bundledWebRuntime": false,
+  "server": {
+    "url": "https://exp.saksolution.com",
+    "cleartext": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 2000,
+      "backgroundColor": "#667eea",
+      "showSpinner": true,
+      "spinnerColor": "#ffffff"
+    }
+  }
+}

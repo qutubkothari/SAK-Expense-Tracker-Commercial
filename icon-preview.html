@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App Icon Preview</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 50px;
+            display: flex;
+            gap: 30px;
+            flex-wrap: wrap;
+            background: #f0f0f0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+        }
+        
+        .icon-container {
+            text-align: center;
+        }
+        
+        .icon {
+            width: 512px;
+            height: 512px;
+            border-radius: 115px; /* iOS rounded corners */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+        
+        /* Option 1: Gradient with Wallet */
+        .icon-1 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .wallet {
+            font-size: 180px;
+            margin-bottom: 20px;
+        }
+        
+        .coins {
+            display: flex;
+            gap: 15px;
+            font-size: 80px;
+        }
+        
+        .app-initial {
+            font-size: 200px;
+            font-weight: 900;
+            color: white;
+            text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        }
+        
+        /* Option 2: Simple with Letter */
+        .icon-2 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .icon-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .dollar-icon {
+            font-size: 160px;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .family-icons {
+            font-size: 80px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* Option 3: Modern Flat */
+        .icon-3 {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .expense-icon {
+            width: 300px;
+            height: 300px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 150px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        /* Option 4: Professional */
+        .icon-4 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .chart-container {
+            width: 280px;
+            height: 280px;
+            background: white;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 140px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+        }
+        
+        .label {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .download-note {
+            width: 100%;
+            padding: 30px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            margin: 20px 0;
+        }
+        
+        .download-note h2 {
+            margin-top: 0;
+            color: #667eea;
+        }
+        
+        .download-note ol {
+            line-height: 1.8;
+        }
+        
+        .download-note code {
+            background: #f5f5f5;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="download-note">
+        <h2>📱 How to Create Your App Icon</h2>
+        <ol>
+            <li>Choose one of the icon designs below (or customize them)</li>
+            <li>Right-click on the icon you like → <strong>"Save image as..."</strong></li>
+            <li>Save as PNG with transparent background if possible</li>
+            <li>Use online tool like <a href="https://www.canva.com" target="_blank">Canva</a> or <a href="https://www.figma.com" target="_blank">Figma</a> to refine it</li>
+            <li>Export as <code>1024×1024 px PNG</code></li>
+            <li>Use Android Studio Image Asset to generate all sizes</li>
+        </ol>
+        <p><strong>Quick Edit Online:</strong></p>
+        <ul>
+            <li><a href="https://www.canva.com/create/app-icons/" target="_blank">Canva App Icon Templates</a></li>
+            <li><a href="https://www.figma.com/community/search?model_type=hub_files&q=app%20icon" target="_blank">Figma App Icon Templates</a></li>
+        </ul>
+    </div>
+
+    <div class="icon-container">
+        <div class="icon icon-1">
+            <div class="wallet">💰</div>
+            <div class="coins">
+                <span>🪙</span>
+                <span>🪙</span>
+            </div>
+        </div>
+        <div class="label">Option 1: Wallet & Coins</div>
+    </div>
+
+    <div class="icon-container">
+        <div class="icon icon-2">
+            <div class="icon-content">
+                <div class="family-icons">
+                    <span>👨‍👩‍👧‍👦</span>
+                </div>
+                <div class="dollar-icon">$</div>
+            </div>
+        </div>
+        <div class="label">Option 2: Family & Money</div>
+    </div>
+
+    <div class="icon-container">
+        <div class="icon icon-3">
+            <div class="expense-icon">
+                📊
+            </div>
+        </div>
+        <div class="label">Option 3: Analytics Chart</div>
+    </div>
+
+    <div class="icon-container">
+        <div class="icon icon-4">
+            <div class="chart-container">
+                💳
+            </div>
+        </div>
+        <div class="label">Option 4: Payment Card</div>
+    </div>
+
+    <div class="icon-container">
+        <div class="icon icon-1">
+            <div class="app-initial">FE</div>
+        </div>
+        <div class="label">Option 5: Letter Initial</div>
+    </div>
+
+    <div class="icon-container">
+        <div class="icon icon-2">
+            <div class="icon-content">
+                <div style="font-size: 140px;">🏦</div>
+                <div style="font-size: 100px; color: white; font-weight: bold;">TRACK</div>
+            </div>
+        </div>
+        <div class="label">Option 6: Bank & Text</div>
+    </div>
+
+    <script>
+        // Optional: Click to download
+        document.querySelectorAll('.icon').forEach((icon, index) => {
+            icon.style.cursor = 'pointer';
+            icon.addEventListener('click', function() {
+                alert(`Icon ${index + 1} selected!\n\nTo save:\n1. Right-click this icon\n2. Choose "Save image as..."\n3. Or take a screenshot and crop to 1024x1024px`);
+            });
+        });
+    </script>
+</body>
+</html>

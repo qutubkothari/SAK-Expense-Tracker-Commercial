@@ -1,0 +1,1227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Expenses">
+  <!-- Prevent browser caching -->
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <title>Family Expense Tracker</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="style.css?v=20251124013400">
+  <link rel="stylesheet" href="sms-notification.css?v=20251207000000">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <link rel="icon" type="image/png" sizes="192x192" href="images/logo.png">
+  <link rel="apple-touch-icon" href="images/logo.png">
+  
+  <!-- Google AdSense (Replace YOUR_PUBLISHER_ID with your actual ID) -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-YOUR_PUBLISHER_ID"
+     crossorigin="anonymous"></script>
+  
+  <!-- Register Service Worker for PWA -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(registration => {
+            console.log('✅ Service Worker registered:', registration.scope);
+          })
+          .catch(error => {
+            console.log('❌ Service Worker registration failed:', error);
+          });
+      });
+    }
+  </script>
+</head>
+<body>
+  <!-- Auth Section -->
+  <div id="authSection" class="auth-container">
+    <div class="auth-card">
+      <img src="images/logo.png" alt="SAK Solution" class="login-logo">
+      <h1>Family Expense Tracker</h1>
+      <h2 id="authTitle">🔒 Login</h2>
+      <div class="phone-input-group">
+        <select id="countryCode" class="country-code-select">
+          <option value="+91">🇮🇳 +91</option>
+          <option value="+971">🇦🇪 +971</option>
+          <option value="+1">🇺🇸 +1</option>
+          <option value="+44">🇬🇧 +44</option>
+          <option value="+86">🇨🇳 +86</option>
+          <option value="+81">🇯🇵 +81</option>
+          <option value="+82">🇰🇷 +82</option>
+          <option value="+65">🇸🇬 +65</option>
+          <option value="+60">🇲🇾 +60</option>
+          <option value="+66">🇹🇭 +66</option>
+          <option value="+61">🇦🇺 +61</option>
+          <option value="+64">🇳🇿 +64</option>
+          <option value="+49">🇩🇪 +49</option>
+          <option value="+33">🇫🇷 +33</option>
+          <option value="+39">🇮🇹 +39</option>
+          <option value="+34">🇪🇸 +34</option>
+          <option value="+7">🇷🇺 +7</option>
+          <option value="+55">🇧🇷 +55</option>
+          <option value="+52">🇲🇽 +52</option>
+          <option value="+27">🇿🇦 +27</option>
+          <option value="+20">🇪🇬 +20</option>
+          <option value="+234">🇳🇬 +234</option>
+          <option value="+254">🇰🇪 +254</option>
+          <option value="+966">🇸🇦 +966</option>
+          <option value="+92">🇵🇰 +92</option>
+          <option value="+880">🇧🇩 +880</option>
+        </select>
+        <input id="phone" type="tel" placeholder="Phone Number" pattern="[0-9]*">
+      </div>
+      <div class="pin-input-wrapper">
+        <input id="pin" type="password" placeholder="PIN" autocomplete="current-password">
+        <button type="button" id="togglePinVisibility" class="pin-toggle" aria-label="Show PIN">Show</button>
+      </div>
+      <div class="form-helper-row">
+        <button type="button" id="forgotPinBtn" class="btn-link small-link">Forgot PIN?</button>
+      </div>
+      <input id="inviteCode" type="text" placeholder="Family Invite Code (optional)" style="display:none">
+      
+      <!-- Preferences (shown only during registration) -->
+      <div id="registrationPreferences" style="display:none;">
+        <select id="defaultCurrency" class="input-select" style="margin-top: 10px;">
+          <option value="INR">🇮🇳 INR (₹) - Indian Rupee</option>
+          <option value="AED">🇦🇪 AED (د.إ) - UAE Dirham</option>
+          <option value="USD">🇺🇸 USD ($) - US Dollar</option>
+          <option value="EUR">🇪🇺 EUR (€) - Euro</option>
+          <option value="GBP">🇬🇧 GBP (£) - British Pound</option>
+          <option value="SAR">🇸🇦 SAR (ر.س) - Saudi Riyal</option>
+          <option value="QAR">🇶🇦 QAR (ر.ق) - Qatari Riyal</option>
+          <option value="KWD">🇰🇼 KWD (د.ك) - Kuwaiti Dinar</option>
+          <option value="OMR">🇴🇲 OMR (ر.ع.) - Omani Rial</option>
+          <option value="BHD">🇧🇭 BHD (د.ب) - Bahraini Dinar</option>
+          <option value="PKR">🇵🇰 PKR (₨) - Pakistani Rupee</option>
+          <option value="BDT">🇧🇩 BDT (৳) - Bangladeshi Taka</option>
+          <option value="LKR">🇱🇰 LKR (රු) - Sri Lankan Rupee</option>
+        </select>
+        
+        <select id="defaultLanguage" class="input-select" style="margin-top: 10px;">
+          <option value="en|English">🇬🇧 English</option>
+          <option value="ar|العربية">🇦🇪 العربية (Arabic)</option>
+          <option value="hi|हिन्दी">🇮🇳 हिन्दी (Hindi)</option>
+          <option value="ur|اردو">🇵🇰 اردو (Urdu)</option>
+          <option value="gu|ગુજરાતી">🇮🇳 ગુજરાતી (Gujarati)</option>
+          <option value="bn|বাংলা">🇧🇩 বাংলা (Bengali)</option>
+          <option value="ta|தமிழ்">🇮🇳 தமிழ் (Tamil)</option>
+          <option value="te|తెలుగు">🇮🇳 తెలుగు (Telugu)</option>
+          <option value="mr|मराठी">🇮🇳 मराठी (Marathi)</option>
+          <option value="ml|മലയാളം">🇮🇳 മലയാളം (Malayalam)</option>
+          <option value="kn|ಕನ್ನಡ">🇮🇳 ಕನ್ನಡ (Kannada)</option>
+          <option value="pa|ਪੰਜਾਬੀ">🇮🇳 ਪੰਜਾਬੀ (Punjabi)</option>
+          <option value="fr|Français">🇫🇷 Français (French)</option>
+          <option value="es|Español">🇪🇸 Español (Spanish)</option>
+          <option value="de|Deutsch">🇩🇪 Deutsch (German)</option>
+          <option value="zh|中文">🇨🇳 中文 (Chinese)</option>
+          <option value="ja|日本語">🇯🇵 日本語 (Japanese)</option>
+          <option value="ko|한국어">🇰🇷 한국어 (Korean)</option>
+        </select>
+      </div>
+      
+      <button id="loginBtn" class="btn-primary">Login</button>
+      <button id="registerBtn" class="btn-secondary">Register</button>
+      <button id="toggleAuthMode" class="btn-link" style="margin-top: 10px; font-size: 0.9em;">New user? Register here</button>
+    </div>
+  </div>
+
+  <!-- Forgot PIN Modal -->
+  <div id="forgotPinModal" class="modal" aria-hidden="true">
+    <div class="modal-content auth-modal">
+      <span class="close" id="closeForgotPinModal" role="button" aria-label="Close reset PIN modal">&times;</span>
+      <h2>Reset PIN</h2>
+      <p class="modal-subtitle">Verify your phone number and family invite code to set a new PIN.</p>
+      <div class="phone-input-group" style="margin-top: 0;">
+        <select id="resetCountryCode" class="country-code-select" aria-label="Country code for reset"></select>
+        <input id="resetPhone" type="tel" placeholder="Phone Number" pattern="[0-9]*" autocomplete="tel">
+      </div>
+      <input id="resetInviteCode" type="text" placeholder="Family Invite Code" autocomplete="one-time-code">
+      <div class="pin-input-wrapper">
+        <input id="resetPin" type="password" placeholder="New PIN" autocomplete="new-password">
+        <button type="button" id="toggleResetPinVisibility" class="pin-toggle" aria-label="Show new PIN">Show</button>
+      </div>
+      <input id="resetConfirmPin" type="password" placeholder="Confirm New PIN" autocomplete="new-password">
+      <button id="resetPinBtn" class="btn-primary" style="margin-top: 15px;">Reset PIN</button>
+      <p class="helper-text">Only admins can share the invite code. Contact your admin if you need help.</p>
+    </div>
+  </div>
+
+  <!-- Main App Section -->
+  <div id="appSection" style="display:none">
+    <!-- Sync Status Indicator -->
+    <div id="syncStatus" class="sync-status online">
+      <i class="fas fa-cloud-upload-alt"></i> Online
+    </div>
+    
+    <!-- Debug Console (Mobile) -->
+    <div id="debugConsole" style="position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.9); color: #0f0; font-size: 10px; padding: 10px; max-height: 150px; overflow-y: auto; z-index: 10000; display: none;">
+      <button onclick="document.getElementById('debugConsole').style.display='none'" style="float: right; background: red; color: white; border: none; padding: 5px 10px; border-radius: 5px;">Close</button>
+      <div id="debugLog"></div>
+    </div>
+    
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="header-logo">
+          <img src="images/logo.png" alt="SAK Solution" class="dashboard-logo">
+          <h1>Expense Tracker</h1>
+        </div>
+        <div class="header-actions">
+          <button id="themeToggle" class="btn-icon" title="Toggle Dark Mode">
+            <i class="fas fa-moon"></i>
+          </button>
+          <button id="showDebugBtn" class="btn-icon" title="Debug" style="background: #ffd166; display: none;"><i class="fas fa-bug"></i></button>
+          <button id="exportBtn" class="btn-secondary" style="margin-right: 10px;"><i class="fas fa-download"></i> Export</button>
+          <button id="importCSVBtn" class="btn-secondary" style="margin-right: 10px;"><i class="fas fa-file-import"></i> Import CSV</button>
+          <button id="detectSubscriptionsBtn" class="btn-secondary" style="margin-right: 10px;"><i class="fas fa-sync-alt"></i> Subscriptions</button>
+          <button id="manageBudgetsBtn" class="btn-secondary" style="margin-right: 10px;"><i class="fas fa-chart-line"></i> Budgets</button>
+            <button id="manageCategoriesBtn" class="btn-secondary" style="margin-right: 10px;"><i class="fas fa-tags"></i> Settings</button>
+          <button id="logoutBtn" class="btn-icon" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Plan Badge & Usage -->
+    <div class="plan-status-bar">
+      <div id="currentPlanBadge" class="plan-badge plan-free">
+        <i class="fas fa-user"></i> Free
+      </div>
+      <div id="usageInfo" class="usage-info">
+        <div class="usage-bar">
+          <div class="usage-fill" style="width: 0%"></div>
+        </div>
+        <p class="usage-text">0 / 50 expenses this month</p>
+      </div>
+      <button id="managePlanBtn" class="btn-secondary btn-sm">
+        <i class="fas fa-crown"></i> Upgrade
+      </button>
+    </div>
+
+    <!-- Limit Banner -->
+    <div id="limitBanner" class="limit-banner" style="display: none;">
+      <!-- Content dynamically added by paywall-manager.js -->
+    </div>
+
+    <!-- AI Insights Banner -->
+    <div id="insightsContainer" class="insights-container" style="display: none;">
+      <div class="insights-header">
+        <span class="insights-title">🤖 AI Insights</span>
+        <button onclick="closeAllInsights()" class="btn-close-all" title="Dismiss all insights">✖ Close All</button>
+      </div>
+      <div id="insightsContent"></div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="summary-cards">
+      <div class="card summary-card">
+        <div class="card-icon" style="background: #43bfa0;">💵</div>
+        <div class="card-content">
+          <h3 id="totalAmount">₹0</h3>
+          <p>This Month</p>
+        </div>
+      </div>
+      <div class="card summary-card">
+        <div class="card-icon" style="background: #b388eb;">📊</div>
+        <div class="card-content">
+          <h3 id="expenseCount">0</h3>
+          <p>Transactions</p>
+        </div>
+      </div>
+      <div class="card summary-card">
+        <div class="card-icon" style="background: #ffd166;">📅</div>
+        <div class="card-content">
+          <h3 id="monthlyAvg">₹0</h3>
+          <p>Monthly Avg</p>
+        </div>
+      </div>
+      <div class="card summary-card">
+        <div class="card-icon" style="background: #667eea;">🤖</div>
+        <div class="card-content">
+          <h3 id="insightCount">0</h3>
+          <p>AI Insights</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Subscriptions Widget -->
+    <div id="subscriptionsWidget" class="card subscriptions-widget" style="display: none;">
+      <!-- Content populated by subscription-detector.js -->
+    </div>
+
+    <!-- Recurring Expenses Alert -->
+    <div id="recurringAlert" class="card recurring-alert" style="display: none;">
+      <h2>🔔 Recurring Expenses Detected</h2>
+      <div id="recurringList"></div>
+    </div>
+
+    <!-- Quick Add Section -->
+    <div class="card add-expense-card">
+      <h2>Add Expense</h2>
+      <div class="add-form">
+        <input id="amount" type="number" placeholder="Amount (₹)" class="input-amount">
+        <select id="categorySelect" class="input-select">
+          <option value="">Select Category</option>
+        </select>
+        <select id="subcategorySelect" class="input-select">
+          <option value="">Select Subcategory</option>
+        </select>
+        <input id="note" type="text" placeholder="Note (optional)" class="input-note">
+        <input id="dateInput" type="datetime-local" class="input-note" title="Expense Date & Time">
+        
+        <!-- Currency & Location Fields -->
+        <div class="currency-fields">
+          <select id="currencySelect" class="input-select" style="width: 48%;">
+            <option value="INR">INR (₹)</option>
+            <option value="AED">AED (د.إ)</option>
+            <option value="USD">USD ($)</option>
+            <option value="EUR">EUR (€)</option>
+            <option value="GBP">GBP (£)</option>
+            <option value="SGD">SGD (S$)</option>
+          </select>
+          <select id="expenseTypeSelect" class="input-select" style="width: 48%;">
+            <option value="personal">Personal</option>
+            <option value="business">Business</option>
+            <option value="travel">Travel</option>
+          </select>
+        </div>
+        <input id="locationInput" type="text" placeholder="Location (e.g., Dubai, USA)" class="input-note">
+        
+        <!-- Payment Method & Status Fields (NEW) -->
+        <div class="currency-fields">
+          <select id="paymentMethodSelect" class="input-select" style="width: 48%;" title="How was this paid?">
+            <option value="cash">💵 Cash</option>
+            <option value="bank">🏦 Bank Transfer</option>
+            <option value="credit_card">💳 Credit Card</option>
+            <option value="debit_card">💳 Debit Card</option>
+            <option value="upi">📱 UPI</option>
+            <option value="wallet">👛 Digital Wallet</option>
+          </select>
+          <select id="paymentStatusSelect" class="input-select" style="width: 48%;" title="Payment status">
+            <option value="paid">✅ Paid</option>
+            <option value="unpaid">⏳ Unpaid</option>
+          </select>
+        </div>
+        
+        <div class="button-group">
+          <button id="addBtn" class="btn-primary"><i class="fas fa-plus"></i> Add</button>
+          <button id="voiceBtn" class="btn-voice" title="Wait for 'Listening...' before speaking"><i class="fas fa-microphone"></i> Voice</button>
+          <button id="smsBtn" class="btn-sms" title="Scan SMS for transactions"><i class="fas fa-sms"></i> SMS Scan</button>
+          <button id="receiptBtn" class="btn-receipt" title="Scan receipt photo"><i class="fas fa-camera"></i> Receipt</button>
+        </div>
+        <p style="font-size: 12px; color: #666; margin-top: 5px; text-align: center;">
+          💡 Tip: Click Voice, wait for "Listening...", then speak clearly
+        </p>
+      </div>
+    </div>
+
+    <!-- Income Tracking Section (NEW) -->
+    <div class="card add-expense-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+      <h2 style="color: white;">💰 Add Income</h2>
+      <div class="add-form">
+        <input id="incomeAmount" type="number" placeholder="Income Amount" class="input-amount" style="background: rgba(255,255,255,0.9);">
+        <select id="incomeSourceSelect" class="input-select" style="background: rgba(255,255,255,0.9);">
+          <option value="">Select Income Source</option>
+          <option value="Business">💼 Business</option>
+          <option value="Profession">⚕️ Profession</option>
+          <option value="Salary">💰 Salary</option>
+          <option value="Investment">📈 Investment</option>
+          <option value="Property Rent">🏠 Property Rent</option>
+          <option value="Home Industry">🏭 Home Industry</option>
+          <option value="Others">📋 Others</option>
+          <option value="Surplus / (Deficit) from Last Month">📊 Surplus / (Deficit) from Last Month</option>
+        </select>
+        <input id="incomeNote" type="text" placeholder="Description (optional)" class="input-note" style="background: rgba(255,255,255,0.9);">
+        <input id="incomeDateInput" type="datetime-local" class="input-note" title="Income Date" style="background: rgba(255,255,255,0.9);">
+        
+        <div class="currency-fields">
+          <select id="incomeCurrencySelect" class="input-select" style="width: 48%; background: rgba(255,255,255,0.9);">
+            <option value="INR">INR (₹)</option>
+            <option value="AED">AED (د.إ)</option>
+            <option value="USD">USD ($)</option>
+            <option value="EUR">EUR (€)</option>
+            <option value="GBP">GBP (£)</option>
+            <option value="SGD">SGD (S$)</option>
+          </select>
+          <input id="incomeBudgetAmount" type="number" placeholder="Monthly Income Budget (optional)" class="input-amount" style="width: 48%; background: rgba(255,255,255,0.9);" title="Set your expected monthly income">
+        </div>
+        
+        <div class="button-group">
+          <button id="addIncomeBtn" class="btn-primary" style="background: white; color: #10b981; font-weight: 600;"><i class="fas fa-plus"></i> Add Income</button>
+          <button id="voiceIncomeBtn" class="btn-voice" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white;" title="Voice input for income"><i class="fas fa-microphone"></i> Voice Income</button>
+        </div>
+        <p style="font-size: 12px; margin-top: 5px; text-align: center; opacity: 0.9;">
+          💡 Say: "Income 5000 rupees salary" or "Earned 1000 dollars freelance"
+        </p>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="card filters-card">
+      <h2>Filters & Reports</h2>
+      <div class="filters-row">
+        <input id="filterDateFrom" type="date" class="input-filter" placeholder="From Date">
+        <input id="filterDateTo" type="date" class="input-filter" placeholder="To Date">
+        <select id="filterCategory" class="input-filter">
+          <option value="">All Categories</option>
+        </select>
+        <select id="filterSubcategory" class="input-filter">
+          <option value="">All Subcategories</option>
+        </select>
+        <select id="filterLocation" class="input-filter">
+          <option value="">All Locations</option>
+          <option value="dubai">Dubai</option>
+          <option value="other">Other</option>
+        </select>
+        <input id="filterBusiness" type="text" class="input-filter" placeholder="Search business/merchant">
+        <button id="applyFiltersBtn" class="btn-secondary">Apply</button>
+        <button id="clearFiltersBtn" class="btn-icon" title="Clear all filters" aria-label="Clear all filters">
+          <i class="fas fa-times" aria-hidden="true"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-container">
+      <div class="card chart-card">
+        <h2>Category Breakdown</h2>
+        <canvas id="categoryChart"></canvas>
+      </div>
+      <div class="card chart-card">
+        <h2>Monthly Trend</h2>
+        <canvas id="trendChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Smart Analytics & Reports Section -->
+    <div class="card analytics-card">
+      <h2>📊 Smart Analytics & Insights</h2>
+      
+      <!-- Spending Summary -->
+      <div class="analytics-section">
+        <h3>💡 Spending Summary</h3>
+        <div id="spendingSummary" class="analytics-grid"></div>
+      </div>
+
+      <!-- Top Spending Categories -->
+      <div class="analytics-section">
+        <h3>🏆 Top Spending Categories</h3>
+        <div id="topCategories" class="top-list"></div>
+      </div>
+
+      <!-- Daily Average & Patterns -->
+      <div class="analytics-section">
+        <h3>📅 Spending Patterns</h3>
+        <div id="spendingPatterns" class="analytics-grid"></div>
+      </div>
+
+      <!-- Predictions & Recommendations -->
+      <div class="analytics-section">
+        <h3>🔮 AI Predictions & Recommendations</h3>
+        <div id="aiPredictions" class="predictions-list"></div>
+      </div>
+
+      <!-- Expense Type Breakdown (Personal/Business/Travel) -->
+      <div class="analytics-section">
+        <h3>💼 Expense Type Breakdown</h3>
+        <div id="expenseTypeBreakdown" class="analytics-grid"></div>
+      </div>
+
+      <!-- Currency Summary -->
+      <div class="analytics-section">
+        <h3>💱 Multi-Currency Summary</h3>
+        <div id="currencySummary" class="analytics-grid"></div>
+      </div>
+    </div>
+
+    <!-- Expenses List -->
+    <div class="card expenses-card">
+      <div class="expenses-header">
+        <h2>Recent Expenses</h2>
+        <button id="forceRefreshBtn" class="btn-secondary" title="Force reload all data from database">
+          <i class="fas fa-database"></i> Force Refresh
+        </button>
+        <button id="refreshRatesBtn" class="btn-secondary" title="Update currency exchange rates">
+          <i class="fas fa-sync-alt"></i> Refresh Rates
+        </button>
+      </div>
+      <div id="expenseList" class="expense-list"></div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="editModal" class="modal" style="display: none;">
+      <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Edit Expense</h2>
+        <input id="editAmount" type="number" placeholder="Amount" class="input-amount">
+        <select id="editCategory" class="input-select"></select>
+        <select id="editSubcategory" class="input-select"></select>
+        <input id="editNote" type="text" placeholder="Note" class="input-note">
+        <input id="editDate" type="datetime-local" class="input-date">
+        <div class="button-group">
+          <button id="saveEditBtn" class="btn-primary">Save</button>
+          <button id="cancelEditBtn" class="btn-secondary">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Voice Button -->
+    <button id="floatingVoiceBtn" class="floating-voice-btn" title="Voice Input - Click and speak">
+      <i class="fas fa-microphone"></i>
+    </button>
+
+    <!-- SMS Scan Modal -->
+    <div id="smsModal" class="modal" style="display: none;">
+      <div class="modal-content sms-modal">
+        <span class="close" onclick="closeSmsModal()">&times;</span>
+        <h2>📱 SMS Auto-Capture</h2>
+        
+        <!-- Tab Navigation -->
+        <div class="sms-tabs">
+          <button class="sms-tab active" onclick="switchSmsTab('manual')">📝 Manual Entry</button>
+          <button class="sms-tab" onclick="switchSmsTab('auto')">⚙️ Auto Settings</button>
+          <button class="sms-tab" onclick="switchSmsTab('share')">📤 Share SMS</button>
+        </div>
+        
+        <!-- Manual Entry Tab -->
+        <div id="manualTab" class="sms-tab-content active">
+          <p class="sms-hint">Paste your bank transaction SMS below</p>
+          <textarea id="smsText" placeholder="Paste SMS here...&#10;&#10;Example:&#10;Rs.1500 debited from A/c XX1234 at CARREFOUR DUBAI on 02-11-24" rows="6" class="sms-input"></textarea>
+          <div class="button-group">
+            <button id="parseSmsBtn" class="btn-primary"><i class="fas fa-magic"></i> Parse SMS</button>
+            <button onclick="closeSmsModal()" class="btn-secondary">Cancel</button>
+          </div>
+          <div id="smsResult" class="sms-result" style="display:none;"></div>
+        </div>
+        
+        <!-- Auto Settings Tab -->
+        <div id="autoTab" class="sms-tab-content">
+          <h3>🔔 Auto-Approved Merchants</h3>
+          <p class="sms-hint">Add merchants/banks to automatically capture expenses from their SMS</p>
+          
+          <!-- SMS Scan Button -->
+          <button id="scanSmsNowBtn" class="btn-primary" style="width: 100%; margin-bottom: 15px;">
+            <i class="fas fa-mobile-alt"></i> Scan SMS for Transactions
+          </button>
+          
+          <div class="merchant-input-group">
+            <input id="newMerchant" type="text" placeholder="e.g., HDFC BANK, Carrefour, Emirates" class="input-note">
+            <button onclick="addTrustedMerchant()" class="btn-primary"><i class="fas fa-plus"></i> Add</button>
+          </div>
+          
+          <div id="merchantList" class="merchant-list"></div>
+          
+          <div class="auto-capture-toggle">
+            <label class="toggle-switch">
+              <input type="checkbox" id="autoCapture" onchange="toggleAutoCapture()">
+              <span class="toggle-slider"></span>
+            </label>
+            <div class="toggle-label">
+              <strong>Enable Auto-Capture</strong>
+              <p>Automatically add expenses from trusted merchant SMS</p>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Share Tab -->
+        <div id="shareTab" class="sms-tab-content">
+          <h3>📤 Share SMS to App</h3>
+          <div class="share-instructions">
+            <p><strong>On Android:</strong></p>
+            <ol>
+              <li>Long-press on any bank SMS</li>
+              <li>Tap "Share" or "Forward"</li>
+              <li>Select "Expense Tracker" app</li>
+              <li>Transaction will auto-parse!</li>
+            </ol>
+            
+            <p><strong>Note:</strong> Install app to home screen first (Add to Home Screen)</p>
+            
+            <button onclick="testShareAPI()" class="btn-secondary">
+              <i class="fas fa-share"></i> Test Share Feature
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SMS Import Modal -->
+    <div id="smsImportModal" class="modal">
+      <div class="modal-content" style="max-width: 800px;">
+        <span class="close" onclick="closeSmsImportModal()">&times;</span>
+        <h2>📱 Import SMS Transactions</h2>
+        <p style="color: #666; margin-bottom: 20px;">Review and categorize transactions found in your SMS</p>
+        
+        <div id="smsImportList" style="max-height: 500px; overflow-y: auto;">
+          <!-- Transactions will be loaded here -->
+        </div>
+        
+        <div class="modal-actions" style="margin-top: 20px;">
+          <button class="btn-secondary" onclick="closeSmsImportModal()">Cancel</button>
+          <button class="btn-primary" id="importSelectedBtn" onclick="importSelectedTransactions()">
+            <i class="fas fa-check"></i> Import Selected
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Receipt Scanner Modal -->
+    <div id="receiptModal" class="modal" style="display: none;">
+      <div class="modal-content receipt-modal">
+        <span class="close" onclick="closeReceiptModal()">&times;</span>
+        <h2>📸 Scan Receipt</h2>
+        
+        <div class="receipt-upload-area">
+          <input type="file" id="receiptFileInput" accept="image/*" capture="environment" style="display: none;" onchange="handleReceiptUpload(event)">
+          
+          <div id="receiptPreview" class="receipt-preview" style="display: none;">
+            <img id="receiptImage" src="" alt="Receipt">
+            <button onclick="clearReceiptImage()" class="btn-secondary btn-small">Clear</button>
+          </div>
+          
+          <div id="receiptUploadPrompt" class="upload-prompt">
+            <i class="fas fa-camera" style="font-size: 48px; color: #667eea; margin-bottom: 15px;"></i>
+            <p>Take a photo or upload receipt image</p>
+            <div class="button-group">
+              <button onclick="document.getElementById('receiptFileInput').click()" class="btn-primary">
+                <i class="fas fa-camera"></i> Take Photo
+              </button>
+              <button onclick="document.getElementById('receiptFileInput').removeAttribute('capture'); document.getElementById('receiptFileInput').click();" class="btn-secondary">
+                <i class="fas fa-upload"></i> Upload File
+              </button>
+            </div>
+          </div>
+          
+          <div id="ocrProgress" class="ocr-progress" style="display: none;">
+            <div class="spinner"></div>
+            <p>Scanning receipt...</p>
+            <p class="ocr-status">Initializing OCR...</p>
+          </div>
+          
+          <div id="ocrResult" class="ocr-result" style="display: none;">
+            <h3>✅ Scanned Data</h3>
+            <div class="scanned-data">
+              <div class="data-item">
+                <span class="data-label">Amount:</span>
+                <span id="scannedAmount" class="data-value">-</span>
+              </div>
+              <div class="data-item">
+                <span class="data-label">Merchant:</span>
+                <span id="scannedMerchant" class="data-value">-</span>
+              </div>
+              <div class="data-item">
+                <span class="data-label">Date:</span>
+                <span id="scannedDate" class="data-value">-</span>
+              </div>
+            </div>
+            <div class="button-group">
+              <button onclick="applyReceiptData()" class="btn-primary">
+                <i class="fas fa-check"></i> Use This Data
+              </button>
+              <button onclick="clearReceiptImage()" class="btn-secondary">Scan Another</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Category Management Modal -->
+    <div id="categoryModal" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 700px;">
+        <span class="close" onclick="document.getElementById('categoryModal').style.display='none'">&times;</span>
+        <h2>Settings & Category Management</h2>
+        
+        <!-- User Preferences Section -->
+        <div class="category-section" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
+          <h3 style="color: white; margin-top: 0;">⚙️ Your Preferences</h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px;">
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px;">Default Currency</label>
+              <select id="userDefaultCurrency" class="input-select" style="background: white; color: #2d3748;">
+                <option value="INR">🇮🇳 INR (₹)</option>
+                <option value="AED">🇦🇪 AED (د.إ)</option>
+                <option value="USD">🇺🇸 USD ($)</option>
+                <option value="EUR">🇪🇺 EUR (€)</option>
+                <option value="GBP">🇬🇧 GBP (£)</option>
+                <option value="SAR">🇸🇦 SAR (ر.س)</option>
+                <option value="QAR">🇶🇦 QAR (ر.ق)</option>
+                <option value="KWD">🇰🇼 KWD (د.ك)</option>
+                <option value="OMR">🇴🇲 OMR (ر.ع.)</option>
+                <option value="BHD">🇧🇭 BHD (د.ب)</option>
+                <option value="PKR">🇵🇰 PKR (₨)</option>
+                <option value="BDT">🇧🇩 BDT (৳)</option>
+                <option value="LKR">🇱🇰 LKR (රු)</option>
+              </select>
+            </div>
+            <div>
+              <label style="display: block; margin-bottom: 5px; font-weight: 500; font-size: 14px;">Default Language</label>
+              <select id="userDefaultLanguage" class="input-select" style="background: white; color: #2d3748;">
+                <option value="en|English">🇬🇧 English</option>
+                <option value="ar|العربية">🇦🇪 العربية</option>
+                <option value="hi|हिन्दी">🇮🇳 हिन्दी</option>
+                <option value="ur|اردو">🇵🇰 اردو</option>
+                <option value="gu|ગુજરાતી">🇮🇳 ગુજરાતી</option>
+                <option value="bn|বাংলা">🇧🇩 বাংলা</option>
+                <option value="ta|தமிழ்">🇮🇳 தமிழ்</option>
+                <option value="te|తెలుగు">🇮🇳 తెలుగు</option>
+                <option value="mr|मराठी">🇮🇳 मराठी</option>
+                <option value="ml|മലയാളം">🇮🇳 മലയാളം</option>
+                <option value="kn|ಕನ್ನಡ">🇮🇳 ಕನ್ನಡ</option>
+                <option value="pa|ਪੰਜਾਬੀ">🇮🇳 ਪੰਜਾਬੀ</option>
+                <option value="fr|Français">🇫🇷 Français</option>
+                <option value="es|Español">🇪🇸 Español</option>
+                <option value="de|Deutsch">🇩🇪 Deutsch</option>
+                <option value="zh|中文">🇨🇳 中文</option>
+              </select>
+            </div>
+          </div>
+          <button id="savePreferencesBtn" class="btn-primary" style="margin-top: 15px; background: white; color: #667eea; font-weight: 600;">
+            <i class="fas fa-save"></i> Save Preferences
+          </button>
+          <p style="margin-top: 10px; font-size: 12px; opacity: 0.9;">These will be used as default when adding expenses and for voice recognition.</p>
+        </div>
+        
+        <h3 style="margin-top: 30px; color: #2d3748;">📊 Category Management</h3>
+        
+        <!-- Add New Category -->
+        <div class="category-section">
+          <h3>Add New Category</h3>
+          <div class="add-form">
+            <input id="newCategoryName" type="text" placeholder="Category Name (e.g., Groceries)" class="input-note">
+            <input id="newCategoryIcon" type="text" placeholder="Icon (emoji, e.g., 🛒)" class="input-note" maxlength="2">
+            <input id="newCategoryColor" type="color" value="#43bfa0" class="input-color">
+            <button id="addCategoryBtn" class="btn-primary"><i class="fas fa-plus"></i> Add Category</button>
+          </div>
+        </div>
+
+        <!-- Add New Subcategory -->
+        <div class="category-section">
+          <h3>Add New Subcategory</h3>
+          <div class="add-form">
+            <select id="parentCategorySelect" class="input-select">
+              <option value="">Select Parent Category</option>
+            </select>
+            <input id="newSubcategoryName" type="text" placeholder="Subcategory Name" class="input-note">
+            <input id="newSubcategoryIcon" type="text" placeholder="Icon (emoji)" class="input-note" maxlength="2">
+            <button id="addSubcategoryBtn" class="btn-primary"><i class="fas fa-plus"></i> Add Subcategory</button>
+          </div>
+        </div>
+
+        <!-- Existing Categories List -->
+        <div class="category-section">
+          <h3>Existing Categories</h3>
+          <div id="categoriesList" class="categories-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Budget Management Modal -->
+    <div id="budgetModal" class="modal" style="display: none;">
+      <div class="modal-content" style="max-width: 800px;">
+        <span class="close" onclick="closeBudgetModal()">&times;</span>
+        <h2>📊 Budget Management</h2>
+        
+        <!-- Add New Budget -->
+        <div class="budget-section">
+          <h3>Set New Budget</h3>
+          <div class="budget-form">
+            <select id="budgetCategorySelect" class="input-select" onchange="populateBudgetSubcategories()">
+              <option value="">Select Category</option>
+              <option value="overall">Overall Monthly Budget</option>
+            </select>
+            <select id="budgetSubcategorySelect" class="input-select" style="display: none;">
+              <option value="">All Subcategories</option>
+            </select>
+            <input id="budgetAmount" type="number" placeholder="Budget Amount (₹)" class="input-amount" step="0.01" min="0" max="99999999">
+            <select id="budgetPeriod" class="input-select">
+              <option value="monthly">Monthly</option>
+              <option value="weekly">Weekly</option>
+              <option value="yearly">Yearly</option>
+            </select>
+            <div style="position: relative; display: inline-block; width: 100%;">
+              <input id="budgetAlert" type="number" placeholder="Alert at" value="80" class="input-amount" min="1" max="100" step="1" style="padding-right: 30px;">
+              <span style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); color: #666; font-weight: bold;">%</span>
+            </div>
+            <button id="addBudgetBtn" class="btn-primary"><i class="fas fa-plus"></i> Set Budget</button>
+          </div>
+        </div>
+        
+        <!-- Current Budgets -->
+        <div class="budget-section">
+          <h3>Current Budgets</h3>
+          <div id="budgetsList" class="budgets-list"></div>
+        </div>
+        
+        <!-- Budget Overview -->
+        <div class="budget-section">
+          <h3>Budget Status</h3>
+          <div id="budgetOverview" class="budget-overview"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CSV Import Modal -->
+  <div id="csvImportModal" class="modal">
+    <div class="modal-content" style="max-width: 800px;">
+      <div class="modal-header">
+        <h2><i class="fas fa-file-import"></i> Import Bank Statement (CSV)</h2>
+        <span class="close">&times;</span>
+      </div>
+      <div class="modal-body">
+        <!-- Step 1: Upload CSV -->
+        <div id="csvUploadSection" class="csv-section">
+          <h3>Step 1: Upload CSV File</h3>
+          <div class="csv-upload-area" id="csvUploadArea">
+            <i class="fas fa-cloud-upload-alt" style="font-size: 48px; color: #667eea;"></i>
+            <p>Drag and drop your bank statement CSV file here</p>
+            <p style="font-size: 0.9em; color: #718096;">or</p>
+            <button class="btn-primary" id="csvSelectBtn">
+              <i class="fas fa-folder-open"></i> Select CSV File
+            </button>
+            <input type="file" id="csvFileInput" accept=".csv" style="display: none;">
+            <p class="csv-info">Supported formats: CSV files from your bank</p>
+          </div>
+          <div id="csvFileInfo" class="csv-file-info" style="display: none;">
+            <i class="fas fa-file-csv"></i>
+            <span id="csvFileName"></span>
+            <button class="btn-icon" id="csvRemoveBtn"><i class="fas fa-times"></i></button>
+          </div>
+        </div>
+
+        <!-- Step 2: Column Mapping -->
+        <div id="csvMappingSection" class="csv-section" style="display: none;">
+          <h3>Step 2: Map Columns</h3>
+          <p style="color: #718096; margin-bottom: 15px;">Match your CSV columns to expense fields</p>
+          <div class="csv-mapping-grid">
+            <div class="mapping-row">
+              <label>Date Column:</label>
+              <select id="csvDateColumn" class="csv-column-select">
+                <option value="">-- Select Column --</option>
+              </select>
+              <select id="csvDateFormat" class="csv-format-select">
+                <option value="DD/MM/YYYY">DD/MM/YYYY</option>
+                <option value="MM/DD/YYYY">MM/DD/YYYY</option>
+                <option value="YYYY-MM-DD">YYYY-MM-DD</option>
+                <option value="DD-MM-YYYY">DD-MM-YYYY</option>
+              </select>
+            </div>
+            <div class="mapping-row">
+              <label>Amount Column:</label>
+              <select id="csvAmountColumn" class="csv-column-select">
+                <option value="">-- Select Column --</option>
+              </select>
+              <span class="mapping-hint">or</span>
+              <div style="display: flex; gap: 10px;">
+                <select id="csvDebitColumn" class="csv-column-select" style="flex: 1;">
+                  <option value="">Debit Column</option>
+                </select>
+                <select id="csvCreditColumn" class="csv-column-select" style="flex: 1;">
+                  <option value="">Credit Column</option>
+                </select>
+              </div>
+            </div>
+            <div class="mapping-row">
+              <label>Description Column:</label>
+              <select id="csvDescriptionColumn" class="csv-column-select">
+                <option value="">-- Select Column --</option>
+              </select>
+            </div>
+            <div class="mapping-row">
+              <label>Category (Optional):</label>
+              <select id="csvCategoryColumn" class="csv-column-select">
+                <option value="">-- Select Column --</option>
+              </select>
+            </div>
+          </div>
+          <div style="margin-top: 15px;">
+            <label style="display: flex; align-items: center; gap: 8px;">
+              <input type="checkbox" id="csvSkipFirstRow" checked>
+              <span>Skip first row (headers)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Step 3: Preview & Import -->
+        <div id="csvPreviewSection" class="csv-section" style="display: none;">
+          <h3>Step 3: Preview & Import</h3>
+          <div id="csvStats" class="csv-stats"></div>
+          <div class="csv-preview-container">
+            <table id="csvPreviewTable" class="csv-preview-table">
+              <thead id="csvPreviewHead"></thead>
+              <tbody id="csvPreviewBody"></tbody>
+            </table>
+          </div>
+          <div id="csvCategoryMapping" class="csv-category-mapping" style="display: none;">
+            <h4>Auto-detected Categories</h4>
+            <div id="csvCategoryList"></div>
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div id="csvImportProgress" class="csv-import-progress" style="display: none;">
+          <div class="progress-bar">
+            <div id="csvProgressBar" class="progress-fill"></div>
+          </div>
+          <p id="csvProgressText">Importing expenses...</p>
+        </div>
+
+        <!-- Actions -->
+        <div class="modal-actions" style="margin-top: 20px;">
+          <button class="btn-secondary" id="csvCancelBtn">Cancel</button>
+          <button class="btn-primary" id="csvNextBtn" style="display: none;">Next</button>
+          <button class="btn-primary" id="csvImportBtn" style="display: none;">
+            <i class="fas fa-check"></i> Import <span id="csvImportCount"></span> Expenses
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Subscriptions Modal -->
+  <div id="subscriptionsModal" class="modal">
+    <div class="modal-content" style="max-width: 900px;">
+      <div class="modal-header">
+        <h2><i class="fas fa-sync-alt"></i> Subscription Management</h2>
+        <span class="close">&times;</span>
+      </div>
+      <div class="modal-body">
+        <!-- Upcoming Reminders Section -->
+        <div class="reminders-section">
+          <h3><i class="fas fa-bell"></i> Upcoming Bills</h3>
+          <div id="upcomingRemindersContainer" class="upcoming-reminders">
+            <p style="text-align: center; color: #a0aec0;">Loading reminders...</p>
+          </div>
+        </div>
+
+        <!-- Scan Section -->
+        <div class="subscriptions-scan-section">
+          <div class="scan-header">
+            <div>
+              <h3>Detect Subscriptions</h3>
+              <p style="color: #718096; margin-top: 5px;">Automatically find recurring payments in your expenses</p>
+            </div>
+            <button class="btn-primary" id="scanSubscriptionsBtn">
+              <i class="fas fa-search"></i> Scan for Subscriptions
+            </button>
+          </div>
+          <div id="scanStatus" class="scan-status" style="display: none;"></div>
+        </div>
+
+        <!-- Detected Patterns -->
+        <div id="detectedPatternsSection" style="margin-top: 25px;">
+          <h3>Detected Patterns</h3>
+          <div id="detectedPatternsList" class="detected-patterns-list">
+            <p style="text-align: center; color: #a0aec0;">No patterns detected yet. Click "Scan for Subscriptions" to analyze.</p>
+          </div>
+        </div>
+
+        <!-- Active Subscriptions -->
+        <div style="margin-top: 30px;">
+          <h3>Active Subscriptions</h3>
+          <div id="subscriptionsList" class="subscriptions-list">
+            <p style="text-align: center; color: #a0aec0; padding: 20px;">No subscriptions tracked yet.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="subscriptionsCancelBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Modal -->
+  <div id="exportModal" class="modal">
+    <div class="modal-content" style="max-width: 700px;">
+      <div class="modal-header">
+        <h2><i class="fas fa-download"></i> Export Expenses</h2>
+        <span class="close">&times;</span>
+      </div>
+      <div class="modal-body">
+        <!-- Date Range Selection -->
+        <div class="export-filters">
+          <h3>Select Date Range</h3>
+          <div class="date-range-inputs">
+            <div class="input-group">
+              <label for="exportStartDate">From</label>
+              <input type="date" id="exportStartDate" class="date-input">
+            </div>
+            <div class="input-group">
+              <label for="exportEndDate">To</label>
+              <input type="date" id="exportEndDate" class="date-input">
+            </div>
+          </div>
+        </div>
+
+        <!-- Export Preview -->
+        <div class="export-preview-section">
+          <h3>Export Preview</h3>
+          <div id="exportPreview" class="export-preview">
+            <p style="text-align: center; color: #a0aec0;">Loading preview...</p>
+          </div>
+        </div>
+
+        <!-- Export Options -->
+        <div class="export-options">
+          <h3>Export Format</h3>
+          <p style="color: #718096; margin-bottom: 15px;">Choose your preferred format for the expense report</p>
+          
+          <div class="export-format-cards">
+            <div class="export-format-card">
+              <div class="format-icon" style="color: #10b981;">
+                <i class="fas fa-file-excel fa-3x"></i>
+              </div>
+              <h4>Excel (XLSX)</h4>
+              <p>Multi-sheet workbook with:</p>
+              <ul>
+                <li>Summary statistics</li>
+                <li>All expense details</li>
+                <li>Monthly trends analysis</li>
+                <li>Category breakdown</li>
+                <li>Top 10 expenses</li>
+              </ul>
+              <button class="btn-primary" id="exportExcelBtn" style="width: 100%; margin-top: 10px;">
+                <i class="fas fa-file-excel"></i> Export to Excel
+              </button>
+            </div>
+
+            <div class="export-format-card">
+              <div class="format-icon" style="color: #ef4444;">
+                <i class="fas fa-file-pdf fa-3x"></i>
+              </div>
+              <h4>PDF Report</h4>
+              <p>Professional report with:</p>
+              <ul>
+                <li>Executive summary</li>
+                <li>Category breakdown table</li>
+                <li>Monthly trends table</li>
+                <li>Top expenses list</li>
+                <li>Print-ready format</li>
+              </ul>
+              <button class="btn-primary" id="exportPDFBtn" style="width: 100%; margin-top: 10px;">
+                <i class="fas fa-file-pdf"></i> Export to PDF
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="exportCancelBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pricing Modal -->
+  <div id="pricingModal" class="modal">
+    <div class="modal-content" style="max-width: 1200px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header">
+        <h2><i class="fas fa-crown"></i> Choose Your Plan</h2>
+        <span class="close">&times;</span>
+      </div>
+      <div class="modal-body">
+        <p style="text-align: center; color: #718096; margin-bottom: 30px;">
+          Unlock powerful features to take control of your finances
+        </p>
+        
+        <div class="pricing-grid">
+          <!-- Free Plan -->
+          <div class="pricing-card" data-plan="free">
+            <h3>Free</h3>
+            <div class="price">
+              <span class="amount">$0</span>
+              <span class="period">/month</span>
+            </div>
+            <ul class="features-list">
+              <li><i class="fas fa-check"></i> 50 expenses per month</li>
+              <li><i class="fas fa-check"></i> Voice input</li>
+              <li><i class="fas fa-check"></i> SMS scanner</li>
+              <li><i class="fas fa-check"></i> Categories & tags</li>
+              <li><i class="fas fa-check"></i> Basic charts</li>
+              <li><i class="fas fa-times text-muted"></i> Receipt scanner</li>
+              <li><i class="fas fa-times text-muted"></i> Budget tracking</li>
+              <li><i class="fas fa-times text-muted"></i> Excel/PDF export</li>
+            </ul>
+            <button class="btn-secondary select-plan-btn" data-plan="free">Current Plan</button>
+          </div>
+
+          <!-- Premium Plan -->
+          <div class="pricing-card featured" data-plan="premium">
+            <div class="popular-badge">Most Popular</div>
+            <h3>Premium</h3>
+            <div class="price">
+              <span class="amount">$4.99</span>
+              <span class="period">/month</span>
+            </div>
+            <ul class="features-list">
+              <li><i class="fas fa-check"></i> Unlimited expenses</li>
+              <li><i class="fas fa-check"></i> Voice input</li>
+              <li><i class="fas fa-check"></i> SMS scanner</li>
+              <li><i class="fas fa-check"></i> Categories & tags</li>
+              <li><i class="fas fa-check"></i> Advanced charts</li>
+              <li><i class="fas fa-check"></i> Receipt scanner (OCR)</li>
+              <li><i class="fas fa-check"></i> Budget tracking & alerts</li>
+              <li><i class="fas fa-check"></i> Excel/PDF export</li>
+              <li><i class="fas fa-check"></i> CSV import</li>
+              <li><i class="fas fa-check"></i> Subscription detection</li>
+            </ul>
+            <button class="btn-primary select-plan-btn" data-plan="premium">Upgrade to Premium</button>
+          </div>
+
+          <!-- Family Plan -->
+          <div class="pricing-card" data-plan="family">
+            <h3>Family</h3>
+            <div class="price">
+              <span class="amount">$9.99</span>
+              <span class="period">/month</span>
+            </div>
+            <ul class="features-list">
+              <li><i class="fas fa-check"></i> Everything in Premium</li>
+              <li><i class="fas fa-check"></i> Up to 5 family members</li>
+              <li><i class="fas fa-check"></i> Shared budgets</li>
+              <li><i class="fas fa-check"></i> Family reports</li>
+              <li><i class="fas fa-check"></i> Priority support</li>
+            </ul>
+            <button class="btn-primary select-plan-btn" data-plan="family">Upgrade to Family</button>
+          </div>
+
+          <!-- Business Plan -->
+          <div class="pricing-card" data-plan="business">
+            <h3>Business</h3>
+            <div class="price">
+              <span class="amount">$19.99</span>
+              <span class="period">/month</span>
+            </div>
+            <ul class="features-list">
+              <li><i class="fas fa-check"></i> Everything in Family</li>
+              <li><i class="fas fa-check"></i> Unlimited team members</li>
+              <li><i class="fas fa-check"></i> Advanced analytics</li>
+              <li><i class="fas fa-check"></i> API access</li>
+              <li><i class="fas fa-check"></i> Custom categories</li>
+              <li><i class="fas fa-check"></i> Dedicated support</li>
+            </ul>
+            <button class="btn-primary select-plan-btn" data-plan="business">Upgrade to Business</button>
+          </div>
+        </div>
+
+        <div class="pricing-note">
+          <p><i class="fas fa-lock"></i> Secure payment powered by Stripe. Cancel anytime.</p>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-secondary" id="pricingCancelBtn">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feature Locked Modal -->
+  <div id="featureLockedModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+      <div class="modal-header">
+        <h2><i class="fas fa-lock"></i> Premium Feature</h2>
+        <span class="close" onclick="document.getElementById('featureLockedModal').style.display='none'">&times;</span>
+      </div>
+      <div class="modal-body" style="text-align: center; padding: 30px;">
+        <div class="locked-icon">
+          <i class="fas fa-crown fa-4x" style="color: #ffd700;"></i>
+        </div>
+        <h3 id="lockedFeatureName" style="margin: 20px 0;">This Feature</h3>
+        <p style="color: #718096; margin-bottom: 25px;">
+          This feature is only available for Premium, Family, and Business plan subscribers.
+          Upgrade your plan to unlock powerful features.
+        </p>
+        <button class="btn-primary" onclick="openPricingModal(); document.getElementById('featureLockedModal').style.display='none';" style="width: 100%; padding: 12px;">
+          <i class="fas fa-crown"></i> View Plans & Upgrade
+        </button>
+        <button class="btn-secondary" onclick="document.getElementById('featureLockedModal').style.display='none'" style="width: 100%; margin-top: 10px;">
+          Maybe Later
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Banner Ad Container (Bottom of screen for FREE users) - HIDDEN FOR NOW -->
+  <div id="bannerAdContainer" style="display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #f5f5f5; padding: 5px; text-align: center; z-index: 999; border-top: 1px solid #ddd;">
+    <!-- Ad will be inserted here by ad-manager.js -->
+  </div>
+
+  <!-- Scripts with cache busting -->
+  <script src="sync-manager.js?v=20251127195000"></script>
+  <script src="theme-manager.js?v=20251103231639"></script>
+  <script src="paywall-manager.js?v=20251104003000"></script>
+  <script src="onboarding.js?v=20251103231639"></script>
+  <script src="voiceIntelligence.js?v=20251103231639"></script>
+  <script src="voiceAI.js?v=20251130151500"></script>
+  <script src="currencyService.js?v=20251103231639"></script>
+  <script src="aiService.js?v=20251103231639"></script>
+  <script src="receipt-scanner.js?v=20251103231639"></script>
+  <script src="budget-manager.js?v=20251105120000"></script>
+  <script src="csv-importer.js?v=20251103231639"></script>
+  <script src="subscription-detector.js?v=20251104000000"></script>
+  <script src="bill-reminder.js?v=20251128125500"></script>
+  <script src="tax-categories.js?v=20251128125500"></script>
+  <script src="export-manager.js?v=20251128125500"></script>
+  <script src="ad-manager.js?v=20251128125500"></script>
+  <script type="module" src="app.js?v=20251208000500"></script>
+  <script>
+    // Force hide all modals on load
+    document.addEventListener('DOMContentLoaded', function() {
+      const modals = document.querySelectorAll('.modal');
+      modals.forEach(modal => {
+        modal.style.display = 'none';
+      });
+
+      // Connect floating voice button to main voice button functionality
+      const floatingVoiceBtn = document.getElementById('floatingVoiceBtn');
+      const mainVoiceBtn = document.getElementById('voiceBtn');
+      
+      if (floatingVoiceBtn && mainVoiceBtn) {
+        // When floating button is clicked, trigger the main voice button
+        floatingVoiceBtn.addEventListener('click', function() {
+          mainVoiceBtn.click();
+          
+          // Add listening state to floating button
+          floatingVoiceBtn.classList.add('listening');
+          
+          // Remove listening state after 5 seconds (typical voice input duration)
+          setTimeout(() => {
+            floatingVoiceBtn.classList.remove('listening');
+          }, 5000);
+        });
+
+        // Optional: Sync visual state with main button
+        const observer = new MutationObserver(function(mutations) {
+          mutations.forEach(function(mutation) {
+            if (mutation.type === 'childList' || mutation.attributeName === 'style') {
+              const isListening = mainVoiceBtn.textContent.includes('Listening');
+              if (isListening) {
+                floatingVoiceBtn.classList.add('listening');
+              } else {
+                floatingVoiceBtn.classList.remove('listening');
+              }
+            }
+          });
+        });
+
+        observer.observe(mainVoiceBtn, {
+          childList: true,
+          attributes: true,
+          attributeFilter: ['style'],
+          subtree: true
+        });
+      }
+    });
+  </script>
+</body>
+</html>

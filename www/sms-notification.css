@@ -1,0 +1,73 @@
+/* SMS Import Notification Styles */
+.sms-import-notification {
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.notification-content {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notification-content i.fa-sms {
+  font-size: 24px;
+  color: #667eea;
+}
+
+.notification-content > div {
+  flex: 1;
+}
+
+.notification-content strong {
+  display: block;
+  font-size: 14px;
+  color: #333;
+  margin-bottom: 2px;
+}
+
+.notification-content p {
+  font-size: 12px;
+  color: #666;
+  margin: 0;
+}
+
+.notification-content button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.notification-content .btn-primary {
+  background: #667eea;
+  color: white;
+}
+
+.notification-content .btn-primary:hover {
+  background: #5568d3;
+}
+
+.notification-content .btn-secondary {
+  background: transparent;
+  color: #666;
+  padding: 8px;
+  width: 32px;
+  height: 32px;
+}
+
+.notification-content .btn-secondary:hover {
+  background: #f0f0f0;
+}
