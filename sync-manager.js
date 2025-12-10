@@ -6,7 +6,7 @@ class SyncManager {
     this.syncQueue = [];
     this.db = null;
     this.dbName = 'ExpenseTrackerDB';
-    this.dbVersion = 3; // Incremented to force cache refresh after category cleanup
+    this.dbVersion = 4; // Incremented to force cache refresh after business categories update
     
     // Listen for online/offline events
     window.addEventListener('online', () => this.handleOnline());
@@ -39,24 +39,24 @@ class SyncManager {
           expenseStore.createIndex('date', 'date', { unique: false });
         }
         
-        // For version 3 upgrade: Clear categories cache to force fresh load
-        if (oldVersion < 3 && db.objectStoreNames.contains('categories')) {
+        // For version 4 upgrade: Clear categories cache to force fresh load of business categories
+        if (oldVersion < 4 && db.objectStoreNames.contains('categories')) {
           const transaction = event.target.transaction;
           const categoriesStore = transaction.objectStore('categories');
           categoriesStore.clear();
-          console.log('🔄 Categories cache cleared for fresh load');
+          console.log('🔄 Categories cache cleared for business categories refresh');
         }
         
         if (!db.objectStoreNames.contains('categories')) {
           db.createObjectStore('categories', { keyPath: 'id' });
         }
         
-        // For version 3 upgrade: Clear subcategories cache to force fresh load
-        if (oldVersion < 3 && db.objectStoreNames.contains('subcategories')) {
+        // For version 4 upgrade: Clear subcategories cache to force fresh load of business subcategories
+        if (oldVersion < 4 && db.objectStoreNames.contains('subcategories')) {
           const transaction = event.target.transaction;
           const subcatStore = transaction.objectStore('subcategories');
           subcatStore.clear();
-          console.log('🔄 Subcategories cache cleared for fresh load');
+          console.log('🔄 Subcategories cache cleared for business categories refresh');
         }
         
         if (!db.objectStoreNames.contains('subcategories')) {

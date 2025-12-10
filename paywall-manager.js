@@ -336,8 +336,17 @@ function updateUIBasedOnPlan() {
   const planBadge = document.getElementById('currentPlanBadge');
   const usageInfo = document.getElementById('usageInfo');
 
+  // Set default if subscription not loaded
+  if (!userSubscription) {
+    userSubscription = {
+      plan_type: 'free',
+      expense_limit: 100,
+      expenses_this_month: 0
+    };
+  }
+
   if (planBadge && userSubscription) {
-    const plan = planLimits[userSubscription.plan_type];
+    const plan = planLimits[userSubscription.plan_type] || planLimits.free;
     planBadge.innerHTML = `
       <i class="fas fa-${userSubscription.plan_type === 'free' ? 'user' : 'crown'}"></i>
       ${plan.name}

@@ -1,23 +1,6 @@
-const CACHE_NAME = 'expense-tracker-v20251130000000';
-const urlsToCache = [
-  "index.html", 
-  "style.css", 
-  "app.js", 
-  "sync-manager.js",
-  "theme-manager.js",
-  "paywall-manager.js",
-  "onboarding.js",
-  "voiceIntelligence.js",
-  "currencyService.js",
-  "aiService.js",
-  "receipt-scanner.js",
-  "budget-manager.js",
-  "csv-importer.js",
-  "subscription-detector.js",
-  "export-manager.js",
-  "supabaseClient.js",
-  "auth.js",
-  "manifest.json",
+const CACHE_NAME = 'expense-tracker-v20251209222800';
+// Temporarily disable caching to force fresh loads
+const urlsToCache = [];
   "images/logo.png"
 ];
 

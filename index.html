@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes" />
@@ -11,9 +11,10 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="Pragma" content="no-cache" />
   <meta http-equiv="Expires" content="0" />
-  <title>Business Expense Manager</title>
+  <title>Family Expense Tracker</title>
   <link rel="manifest" href="manifest.json">
-  <link rel="stylesheet" href="style.css?v=20251124010900">
+  <link rel="stylesheet" href="style.css?v=20251209222500">
+  <link rel="stylesheet" href="sms-notification.css?v=20251207000000">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
@@ -49,7 +50,7 @@
   <div id="authSection" class="auth-container">
     <div class="auth-card">
       <img src="images/logo.png" alt="SAK Solution" class="login-logo">
-      <h1>Business Expense Manager</h1>
+      <h1>Family Expense Tracker</h1>
       <h2 id="authTitle">🔒 Login</h2>
       <div class="phone-input-group">
         <select id="countryCode" class="country-code-select">
@@ -82,7 +83,14 @@
         </select>
         <input id="phone" type="tel" placeholder="Phone Number" pattern="[0-9]*">
       </div>
-      <input id="pin" type="password" placeholder="PIN">
+      <div class="pin-input-wrapper">
+        <input id="pin" type="password" placeholder="PIN" autocomplete="current-password">
+        <button type="button" id="togglePinVisibility" class="pin-toggle" aria-label="Show PIN">Show</button>
+      </div>
+      <div class="form-helper-row">
+        <button type="button" id="forgotPinBtn" class="btn-link small-link">Forgot PIN?</button>
+      </div>
+      <input id="inviteCode" type="text" placeholder="Family Invite Code (optional)" style="display:none">
       
       <!-- Preferences (shown only during registration) -->
       <div id="registrationPreferences" style="display:none;">
@@ -130,6 +138,27 @@
     </div>
   </div>
 
+  <!-- Forgot PIN Modal -->
+  <div id="forgotPinModal" class="modal" aria-hidden="true">
+    <div class="modal-content auth-modal">
+      <span class="close" id="closeForgotPinModal" role="button" aria-label="Close reset PIN modal">&times;</span>
+      <h2>Reset PIN</h2>
+      <p class="modal-subtitle">Verify your phone number and family invite code to set a new PIN.</p>
+      <div class="phone-input-group" style="margin-top: 0;">
+        <select id="resetCountryCode" class="country-code-select" aria-label="Country code for reset"></select>
+        <input id="resetPhone" type="tel" placeholder="Phone Number" pattern="[0-9]*" autocomplete="tel">
+      </div>
+      <input id="resetInviteCode" type="text" placeholder="Family Invite Code" autocomplete="one-time-code">
+      <div class="pin-input-wrapper">
+        <input id="resetPin" type="password" placeholder="New PIN" autocomplete="new-password">
+        <button type="button" id="toggleResetPinVisibility" class="pin-toggle" aria-label="Show new PIN">Show</button>
+      </div>
+      <input id="resetConfirmPin" type="password" placeholder="Confirm New PIN" autocomplete="new-password">
+      <button id="resetPinBtn" class="btn-primary" style="margin-top: 15px;">Reset PIN</button>
+      <p class="helper-text">Only admins can share the invite code. Contact your admin if you need help.</p>
+    </div>
+  </div>
+
   <!-- Main App Section -->
   <div id="appSection" style="display:none">
     <!-- Sync Status Indicator -->
@@ -159,7 +188,7 @@
           <button id="importCSVBtn" class="btn-secondary" style="margin-right: 10px;"><i class="fas fa-file-import"></i> Import CSV</button>
           <button id="detectSubscriptionsBtn" class="btn-secondary" style="margin-right: 10px;"><i class="fas fa-sync-alt"></i> Subscriptions</button>
           <button id="manageBudgetsBtn" class="btn-secondary" style="margin-right: 10px;"><i class="fas fa-chart-line"></i> Budgets</button>
-          <button id="manageCategoriesBtn" class="btn-secondary" style="margin-right: 10px;"><i class="fas fa-tags"></i> Settings</button>
+            <button id="manageCategoriesBtn" class="btn-secondary" style="margin-right: 10px;"><i class="fas fa-tags"></i> Settings</button>
           <button id="logoutBtn" class="btn-icon" title="Logout"><i class="fas fa-sign-out-alt"></i></button>
         </div>
       </div>
@@ -198,28 +227,28 @@
     <!-- Summary Cards -->
     <div class="summary-cards">
       <div class="card summary-card">
-        <div class="card-icon" style="background: #43bfa0;">💵</div>
+        <div class="card-icon"><i class="fas fa-wallet"></i></div>
         <div class="card-content">
           <h3 id="totalAmount">₹0</h3>
           <p>This Month</p>
         </div>
       </div>
       <div class="card summary-card">
-        <div class="card-icon" style="background: #b388eb;">📊</div>
+        <div class="card-icon"><i class="fas fa-chart-line"></i></div>
         <div class="card-content">
           <h3 id="expenseCount">0</h3>
           <p>Transactions</p>
         </div>
       </div>
       <div class="card summary-card">
-        <div class="card-icon" style="background: #ffd166;">📅</div>
+        <div class="card-icon"><i class="fas fa-calendar-alt"></i></div>
         <div class="card-content">
           <h3 id="monthlyAvg">₹0</h3>
           <p>Monthly Avg</p>
         </div>
       </div>
       <div class="card summary-card">
-        <div class="card-icon" style="background: #667eea;">🤖</div>
+        <div class="card-icon"><i class="fas fa-lightbulb"></i></div>
         <div class="card-content">
           <h3 id="insightCount">0</h3>
           <p>AI Insights</p>
@@ -243,6 +272,38 @@
       <h2>Add Expense</h2>
       <div class="add-form">
         <input id="amount" type="number" placeholder="Amount (₹)" class="input-amount">
+        <select id="projectSelect" class="input-select" style="border-left: 4px solid var(--accent-primary);">
+          <option value="">Select Project</option>
+          <optgroup label="🎪 Events & Exhibitions">
+            <option value="Exhibition Delhi">Exhibition Delhi</option>
+            <option value="Exhibition Chennai">Exhibition Chennai</option>
+            <option value="Exhibition Mumbai">Exhibition Mumbai</option>
+            <option value="Exhibition Bangalore">Exhibition Bangalore</option>
+            <option value="Conference Mumbai">Conference Mumbai</option>
+            <option value="Trade Show Bangalore">Trade Show Bangalore</option>
+          </optgroup>
+          <optgroup label="💼 Client Projects">
+            <option value="Client Project A">Client Project A</option>
+            <option value="Client Project B">Client Project B</option>
+            <option value="Client Project C">Client Project C</option>
+          </optgroup>
+          <optgroup label="📍 Office Locations">
+            <option value="Delhi Office">Delhi Office</option>
+            <option value="Chennai Office">Chennai Office</option>
+            <option value="Mumbai Office">Mumbai Office</option>
+            <option value="Bangalore Office">Bangalore Office</option>
+          </optgroup>
+          <optgroup label="🎯 Departments">
+            <option value="Marketing Campaign">Marketing Campaign</option>
+            <option value="Sales Operations">Sales Operations</option>
+            <option value="R&D Initiative">R&D Initiative</option>
+          </optgroup>
+          <optgroup label="⚙️ Internal">
+            <option value="General Operations">General Operations</option>
+            <option value="Admin Overhead">Admin Overhead</option>
+            <option value="Infrastructure">Infrastructure</option>
+          </optgroup>
+        </select>
         <select id="categorySelect" class="input-select">
           <option value="">Select Category</option>
         </select>
@@ -299,21 +360,20 @@
     </div>
 
     <!-- Income Tracking Section (NEW) -->
-    <div class="card add-expense-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white;">
+    <div class="card add-expense-card" style="background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-secondary) 100%); color: white;">
       <h2 style="color: white;">💰 Add Income</h2>
       <div class="add-form">
         <input id="incomeAmount" type="number" placeholder="Income Amount" class="input-amount" style="background: rgba(255,255,255,0.9);">
         <select id="incomeSourceSelect" class="input-select" style="background: rgba(255,255,255,0.9);">
           <option value="">Select Income Source</option>
-          <option value="salary">💼 Salary</option>
-          <option value="freelance">💻 Freelance</option>
-          <option value="business">🏢 Business</option>
-          <option value="investment">📈 Investment</option>
-          <option value="rental">🏠 Rental</option>
-          <option value="bonus">🎁 Bonus</option>
-          <option value="gift">🎉 Gift</option>
-          <option value="refund">↩️ Refund</option>
-          <option value="other">📋 Other</option>
+          <option value="Business">💼 Business</option>
+          <option value="Profession">⚕️ Profession</option>
+          <option value="Salary">💰 Salary</option>
+          <option value="Investment">📈 Investment</option>
+          <option value="Property Rent">🏠 Property Rent</option>
+          <option value="Home Industry">🏭 Home Industry</option>
+          <option value="Others">📋 Others</option>
+          <option value="Surplus / (Deficit) from Last Month">📊 Surplus / (Deficit) from Last Month</option>
         </select>
         <input id="incomeNote" type="text" placeholder="Description (optional)" class="input-note" style="background: rgba(255,255,255,0.9);">
         <input id="incomeDateInput" type="datetime-local" class="input-note" title="Income Date" style="background: rgba(255,255,255,0.9);">
@@ -331,7 +391,7 @@
         </div>
         
         <div class="button-group">
-          <button id="addIncomeBtn" class="btn-primary" style="background: white; color: #10b981; font-weight: 600;"><i class="fas fa-plus"></i> Add Income</button>
+          <button id="addIncomeBtn" class="btn-primary" style="background: white; color: var(--accent-primary); font-weight: 600;"><i class="fas fa-plus"></i> Add Income</button>
           <button id="voiceIncomeBtn" class="btn-voice" style="background: rgba(255,255,255,0.2); color: white; border: 2px solid white;" title="Voice input for income"><i class="fas fa-microphone"></i> Voice Income</button>
         </div>
         <p style="font-size: 12px; margin-top: 5px; text-align: center; opacity: 0.9;">
@@ -483,6 +543,11 @@
           <h3>🔔 Auto-Approved Merchants</h3>
           <p class="sms-hint">Add merchants/banks to automatically capture expenses from their SMS</p>
           
+          <!-- SMS Scan Button -->
+          <button id="scanSmsNowBtn" class="btn-primary" style="width: 100%; margin-bottom: 15px;">
+            <i class="fas fa-mobile-alt"></i> Scan SMS for Transactions
+          </button>
+          
           <div class="merchant-input-group">
             <input id="newMerchant" type="text" placeholder="e.g., HDFC BANK, Carrefour, Emirates" class="input-note">
             <button onclick="addTrustedMerchant()" class="btn-primary"><i class="fas fa-plus"></i> Add</button>
@@ -520,6 +585,26 @@
               <i class="fas fa-share"></i> Test Share Feature
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SMS Import Modal -->
+    <div id="smsImportModal" class="modal">
+      <div class="modal-content" style="max-width: 800px;">
+        <span class="close" onclick="closeSmsImportModal()">&times;</span>
+        <h2>📱 Import SMS Transactions</h2>
+        <p style="color: #666; margin-bottom: 20px;">Review and categorize transactions found in your SMS</p>
+        
+        <div id="smsImportList" style="max-height: 500px; overflow-y: auto;">
+          <!-- Transactions will be loaded here -->
+        </div>
+        
+        <div class="modal-actions" style="margin-top: 20px;">
+          <button class="btn-secondary" onclick="closeSmsImportModal()">Cancel</button>
+          <button class="btn-primary" id="importSelectedBtn" onclick="importSelectedTransactions()">
+            <i class="fas fa-check"></i> Import Selected
+          </button>
         </div>
       </div>
     </div>
@@ -1098,8 +1183,8 @@
     </div>
   </div>
 
-  <!-- Banner Ad Container (Bottom of screen for FREE users) -->
-  <div id="bannerAdContainer" style="position: fixed; bottom: 0; left: 0; right: 0; background: #f5f5f5; padding: 5px; text-align: center; z-index: 999; border-top: 1px solid #ddd;">
+  <!-- Banner Ad Container (Bottom of screen for FREE users) - HIDDEN FOR NOW -->
+  <div id="bannerAdContainer" style="display: none; position: fixed; bottom: 0; left: 0; right: 0; background: #f5f5f5; padding: 5px; text-align: center; z-index: 999; border-top: 1px solid #ddd;">
     <!-- Ad will be inserted here by ad-manager.js -->
   </div>
 
@@ -1109,18 +1194,18 @@
   <script src="paywall-manager.js?v=20251104003000"></script>
   <script src="onboarding.js?v=20251103231639"></script>
   <script src="voiceIntelligence.js?v=20251103231639"></script>
-  <script src="voiceAI.js?v=20251108120000"></script>
+  <script src="voiceAI.js?v=20251130151500"></script>
   <script src="currencyService.js?v=20251103231639"></script>
   <script src="aiService.js?v=20251103231639"></script>
   <script src="receipt-scanner.js?v=20251103231639"></script>
   <script src="budget-manager.js?v=20251105120000"></script>
   <script src="csv-importer.js?v=20251103231639"></script>
   <script src="subscription-detector.js?v=20251104000000"></script>
-  <script src="bill-reminder.js?v=20251108210000"></script>
-  <script src="tax-categories.js?v=20251108230000"></script>
-  <script src="export-manager.js?v=20251103231639"></script>
-  <script src="ad-manager.js?v=20251105120000"></script>
-  <script type="module" src="app.js?v=20251105120000"></script>
+  <script src="bill-reminder.js?v=20251128125500"></script>
+  <script src="tax-categories.js?v=20251128125500"></script>
+  <script src="export-manager.js?v=20251128125500"></script>
+  <script src="ad-manager.js?v=20251128125500"></script>
+  <script type="module" src="app.js?v=20251208000500"></script>
   <script>
     // Force hide all modals on load
     document.addEventListener('DOMContentLoaded', function() {

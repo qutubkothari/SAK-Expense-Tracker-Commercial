@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Test</title>
+    <link rel="stylesheet" href="style.css?v=999999">
+</head>
+<body>
+    <div style="padding: 40px;">
+        <h1>Theme Color Test</h1>
+        
+        <div class="card" style="margin: 20px 0;">
+            <h2>Summary Cards</h2>
+            <div class="summary-cards">
+                <div class="card summary-card">
+                    <div class="card-icon"><i class="fas fa-wallet"></i>💰</div>
+                    <div class="card-content">
+                        <h3>₹25,000</h3>
+                        <p>This Month</p>
+                    </div>
+                </div>
+                <div class="card summary-card">
+                    <div class="card-icon"><i class="fas fa-chart-line"></i>📊</div>
+                    <div class="card-content">
+                        <h3>150</h3>
+                        <p>Transactions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Button Tests</h2>
+            <button class="btn-primary">Primary Button</button>
+            <button class="btn-secondary">Secondary Button</button>
+            <button class="btn-voice">Voice Button</button>
+        </div>
+
+        <div style="margin-top: 20px; padding: 20px; background: white; border-radius: 12px;">
+            <h3>CSS Variable Values:</h3>
+            <div id="colorTest"></div>
+        </div>
+    </div>
+
+    <script>
+        // Display actual CSS variable values
+        const root = getComputedStyle(document.documentElement);
+        const colors = {
+            '--accent-primary': root.getPropertyValue('--accent-primary').trim(),
+            '--accent-secondary': root.getPropertyValue('--accent-secondary').trim(),
+            '--accent-light': root.getPropertyValue('--accent-light').trim(),
+            '--bg-primary': root.getPropertyValue('--bg-primary').trim()
+        };
+        
+        let html = '';
+        for (const [name, value] of Object.entries(colors)) {
+            html += `<div style="margin: 10px 0;">
+                <strong>${name}:</strong> 
+                <span style="color: ${value}; background: ${value}; padding: 5px 20px; border: 1px solid #ccc;">
+                    ${value}
+                </span>
+            </div>`;
+        }
+        document.getElementById('colorTest').innerHTML = html;
+    </script>
+</body>
+</html>
